@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='stylesheets/style.css') }}" >
+
+
+    <!-- <scirpt src="{{ url_for('static', filename='js/script.js') }}"> </scirpt> -->
+
+   
+</head>
+<body>
+    <div class="sidebar">
+        <h2>Uniuni Warehouse Assistant</h2>
+        <ul>
+            <li><a href="./">Home</a></li>
+            <li><a href="./Test.html">Test</a></li>
+            <li><a href="./Uniuni-Concat.html">Convert</a></li>
+            <li><a href="#">Settings</a></li>
+        </ul>
+    </div>
+
+    <div class="content">
+        <h1>String Generator</h1>
+                       
+        <form id="myForm" action="/Uniuni-Concat.html" method="post">
+            <div class="inputArea" id="inputArea">
+                Batch Number <input type="text" name="batchInput">
+
+                <div class="dspInput" >
+                    Driver <input type="text" name="driverInputs[]">
+                    Assign <input type="text" name="assignInputs[]">
+                </div>
+                
+            </div>
+
+            <div id="BtnArea">
+                <button type="button" id="addInput">Add More DSP </button>
+                <input type="submit" value="Submit">
+            </div>
+            
+        </form>
+       
+
+        <div id="result">
+
+            <p>
+                {{current_time}} Batch: {{batchNum}}
+                
+                
+            </p>
+    
+
+            <p>
+                My Driver List:
+
+                <ul>
+                    {% for drvr in driverIDs %}
+                    <li style="list-style-type: none;"> {{drvr}}</li>
+                    {% endfor %}
+                </ul>
+
+            </p>
+
+       
+            
+        </div>
+
+        
+
+    </div>
+
+    <script>
+        /*Dynamically add drivers when click the btn*/
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('addInput').addEventListener('click', function() {
+
+                //Div of 'dspInput'
+                var dspInput_div = document.createElement('div')
+                dspInput_div.className = 'dspInput'
+
+                var inputArea = document.getElementById('inputArea'); //Main Input Area
+
+
+                //New input field for driver
+                var D_title = document.createTextNode("Driver ")
+                var D_newInput = document.createElement('input');
+                D_newInput.appendChild(D_title)
+                
+                D_newInput.type = 'text';
+                D_newInput.name = 'driverInputs[]';
+
+                //New input field for assign Number
+                var A_newInput = document.createElement('input');
+                A_newInput.type = 'text';
+                A_newInput.name = 'assignInputs[]';
+
+                
+                inputArea.appendChild(dspInput_div);
+                dspInput_div.appendChild(D_newInput)
+                dspInput_div.appendChild(A_newInput)
+             
+
+          
+                
+               
+                
+                
+               
+                
+            });
+        });
+        
+    
+    </script>
+
+    <!-- <script>
+        $(document).ready(function() {
+            $('#driverInput-1').submit(function(event) {
+               
+                $.ajax({
+                    type: 'POST',
+                    url: '/',
+                    data: $(this).serialize(),
+                    success: function(response) {
+                        $('#result').html($(response).find('#result').html());
+                    }
+                });
+            });
+
+        });
+
+    </script> -->
+
+
+</body>
+</html>

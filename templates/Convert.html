@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='stylesheets/style.css') }}" >
+</head>
+<body>
+    <div class="sidebar">
+        <h2>Uniuni Warehouse Assistant</h2>
+        <ul>
+            <li><a href="./">Home</a></li>
+            <li><a href="./Test.html">Test</a></li>
+            <li><a href="./Convert.html">Convert</a></li>
+            <li><a href="#">Settings</a></li>
+        </ul>
+    </div>
+
+    <div class="content">
+        <h1>Welcome to MY SHIT</h1>
+        <p>This is a simple example of an admin dashboard layout.</p>
+
+        <form id='convInput' action="/Convert.html" method="post">
+                       Celsius temperature: <input type="text" name="celsius">
+                       <input type="submit" value="Convert to Fahrenheit">
+        </form>
+
+        <div id="result">
+            {% if result is not none %}
+                <p>Result: {{my_var}}</p>
+            {% endif %}
+    
+            
+        </div>
+
+        
+
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            $('#convInput').submit(function(event) {
+                <!-- event.preventDefault(); -->
+                $.ajax({
+                    type: 'POST',
+                    url: '/',
+                    data: $(this).serialize(),
+                    success: function(response) {
+                        $('#result').html($(response).find('#result').html());
+                    }
+                });
+            });
+        });
+    </script>
+
+</body>
+</html>
