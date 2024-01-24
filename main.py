@@ -327,6 +327,31 @@ def countStates(file,emptyTotal):
             ALARM_Collection.append((instance_date,sheet[f'{driver_column}{row}'].value,state_value,batch_value))
 
 
+        #Add Analysis
+        #!! Not really "empty" now !!
+        for ddata in emptyTotal: 
+            
+
+            #Total Packages in THIS day
+            this_ttlPAKGs = sum(ddata['st_result'])
+
+            ddata['data_analysis'] = []
+
+            for one_st in ddata['st_result']:
+
+                if(this_ttlPAKGs != 0):
+                    rate = one_st / this_ttlPAKGs
+
+                ddata['data_analysis'].append('{:.2%}'.format(rate))
+                "{:.0%}".format(1/3)
+
+
+            ddata['data_analysis'].append(this_ttlPAKGs)
+            
+        #     # ddata['data_analysis'] = [this_ttlPAKGs]
+                
+        # print(emptyTotal)
+
     return emptyTotal
 
 def writeIn():
@@ -351,6 +376,9 @@ def writeIn():
 
     dateWriteIn_row = 3
     dateWriteIn_col = ''
+
+    ttlRate_col = '' #F, J, H
+    
 
     #Alarm
     ALARMWriteIn_col_date = 'Q'
@@ -377,31 +405,43 @@ def writeIn():
             result_col = 'E'
             dateWriteIn_col = 'D'
             dateWriteIn_row = 3
+
+            ttlRate_col = 'F'
             
         elif cnt == 1:
             result_col = 'I'
             dateWriteIn_col = 'H'
             dateWriteIn_row = 3
 
+            ttlRate_col = 'J'
+
         elif cnt == 2:
             result_col = 'M'
             dateWriteIn_col = 'L'
             dateWriteIn_row = 3
 
+            ttlRate_col = 'N'
+
         elif cnt == 3:
             result_col = 'E'
             dateWriteIn_col = 'D'
             dateWriteIn_row = 22
+
+            ttlRate_col = 'F'
             
         elif cnt == 4:
             result_col = 'I'
             dateWriteIn_col = 'H'
             dateWriteIn_row = 22
 
+            ttlRate_col = 'J'
+
         elif cnt == 5:
             result_col = 'M'
             dateWriteIn_col = 'L'
             dateWriteIn_row = 22
+
+            ttlRate_col = 'N'
 
 
         
@@ -409,20 +449,45 @@ def writeIn():
         result_sheet[dateWriteIn_col+str(dateWriteIn_row)] = val['date']
         result_book.save('./tmp/V3-Auto-Daily-Report.xlsx')
 
+        
+
+
         #Write in state data
         for idx,st in enumerate(val['st_result']):
             #idx = # of each single state
             
+            
             if(cnt < 3):
-                result_sheet[result_col+str(result_row_first_3[idx])] = st
+                #Write in "TTL PAKGS"
+                result_sheet[result_col+str(result_row_first_3[-1] + 1)] =  val['data_analysis'][-1]
+                result_sheet[ttlRate_col+str(result_row_first_3[-1] + 1)] =  "100.00%"
+
+                #Write in "Quantity"
+                result_sheet[result_col+str(result_row_first_3[idx])] = st 
+
+                #Write in "Totol Rate"
+                result_sheet[ttlRate_col+str(result_row_first_3[idx])] = val['data_analysis'][idx]
             else:
+                result_sheet[result_col+str(result_row_last_3[-1] + 1)] = val['data_analysis'][-1] 
+                result_sheet[ttlRate_col+str(result_row_last_3[-1] + 1)] =  "100.00%"
                 result_sheet[result_col+str(result_row_last_3[idx])] = st
+                result_sheet[ttlRate_col+str(result_row_last_3[idx])] = val['data_analysis'][idx]
 
             result_book.save('./tmp/V3-Auto-Daily-Report.xlsx')
 
+        # #Write in data analysis
+        # for idx,st in enumerate(val['data_analysis']):
+        #     #idx = # of each single state
+        #     if(cnt < 3):
+        #         result_sheet[result_col+str(result_row_first_3[idx])] = st #data value
+        #         result_sheet[ttlRate_col+str(result_row_first_3[idx])] = st #data analysis
+        #     else:
+        #         result_sheet[result_col+str(result_row_last_3[idx])] = st
+        #         result_sheet[ttlRate_col+str(result_row_last_3[idx])] = st
 
+        #     result_book.save('./tmp/V3-Auto-Daily-Report.xlsx')
 
-        #Progress Management
+        #Progress Management #For "Process Bar"
         progress = cnt + 1
 
         
@@ -461,7 +526,17 @@ def download_file(filename):
 
 @app.route('/')
 def index():
-    current_time = datetime.now().strftime("%Y-%m-%d")
+    # Define your local timezone
+    local_timezone = pytz.timezone('America/Phoenix')  # e.g., 'America/New_York'
+
+    # Get the current time in UTC
+    utc_time = datetime.now(pytz.utc)
+
+    # Convert UTC time to your local time
+    local_time = utc_time.astimezone(local_timezone)
+
+    current_time = local_time.strftime("%Y-%m-%d, %H:%M:%S")
+
     return render_template('index.html', current_time = current_time)
 
 
