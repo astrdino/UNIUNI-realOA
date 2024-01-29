@@ -2,9 +2,12 @@
 from flask import Flask, request,render_template,send_file,send_from_directory, jsonify
 
 import pandas as pd
+import numpy as np
 import openpyxl 
 
 import os
+import io
+
 import csv
 from datetime import datetime, timedelta
 import pytz
@@ -13,6 +16,9 @@ import pytz
 import threading
 import time
 
+
+
+#Version 01/24/2024
 
 #https://realpython.com/python-web-applications/
 
@@ -145,7 +151,43 @@ def upload_OL():
 
         writeIn()
 
-        return render_template('Auto_DailyReport.html',output_filename="V3-Auto-Daily-Report.xlsx")
+        """
+        String Display On the Site
+        """
+        # Open the Excel file
+        wb = openpyxl.load_workbook('./tmp/V3-Auto-Daily-Report.xlsx',data_only = True)
+        sheet = wb.active
+
+
+        # Convert the sheet to HTML
+        output = io.StringIO()
+        output.write('<table class="excel-table">')
+
+        # Header row
+        output.write('<tr>')
+        for cell in sheet[1]:
+            cell_value = '' if cell.value is None else cell.value
+            output.write(f'<th>{cell_value}</th>')
+        output.write('</tr>')
+
+        # Data rows
+        for row in sheet.iter_rows(min_row=2):
+            output.write('<tr>')
+            for cell in row:
+                cell_value = '' if cell.value is None else cell.value
+
+                #Make particular title bold
+                if cell_value == 'Pakg Status' or cell_value == 'Quantity' or cell_value == "Total Rate" or cell_value == "TTL PAKGS" or is_date(str(cell_value)):
+                    output.write(f'<td><strong>{cell_value}</strong></td>')
+                else:
+                    output.write(f'<td>{cell_value}</td>')
+            output.write('</tr>')
+
+        output.write('</table>')
+        html_table = output.getvalue()
+        output.close()
+
+        return render_template('Auto_DailyReport.html',output_filename="V3-Auto-Daily-Report.xlsx", table=html_table)
         # return render_template('Auto_DailyReport.html',RA_Sheet_Status = 'Road Assignment Found')
 
 
@@ -210,6 +252,13 @@ def getDate():
     #[('01', '06'), ('01', '07'), ('01', '08'), ('01', '09'), ('01', '10'), ('01', '11')]
     # print(datelist)
     return datelist
+
+def is_date(string):
+    try:
+        datetime.strptime(string, '%m-%d-%Y')
+        return True
+    except ValueError:
+        return False
 
 def genMapList(file,DATE_LIST):
 
@@ -338,7 +387,7 @@ def countStates(file,emptyTotal):
             ddata['data_analysis'] = []
 
             for one_st in ddata['st_result']:
-
+                rate = 0
                 if(this_ttlPAKGs != 0):
                     rate = one_st / this_ttlPAKGs
 
