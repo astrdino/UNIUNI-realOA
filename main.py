@@ -145,6 +145,8 @@ def upload_OL():
         return 'No selected file for Order List'
     
     if file_OL: 
+
+        __TEST__start_Time = time.time()
         
         # print(TOTAL)
         print(countStates(file_OL,TOTAL))
@@ -187,7 +189,11 @@ def upload_OL():
         html_table = output.getvalue()
         output.close()
 
-        return render_template('Auto_DailyReport.html',output_filename="V3-Auto-Daily-Report.xlsx", table=html_table)
+        __TEST__end_Time = time.time()
+
+        print(__TEST__end_Time - __TEST__start_Time)
+
+        return render_template('Auto_DailyReport.html',output_filename="V3-Auto-Daily-Report.xlsx", table=html_table,)
         # return render_template('Auto_DailyReport.html',RA_Sheet_Status = 'Road Assignment Found')
 
 

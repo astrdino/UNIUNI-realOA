@@ -73,7 +73,7 @@ body {
 .excel-table-container {
     display: flex;
     padding-left: var(--NavWidth);
-    padding-top: 10%;
+    
     width: 100%;
     /* height: 600px; */
     overflow: auto; /* Enables scrolling */
