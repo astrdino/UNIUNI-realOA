@@ -69,7 +69,20 @@ body {
 }
 
 
+/* Main Page */
 
+#MainPage_Upload_RD{
+    border: #333 solid 1px;
+}
+
+
+
+
+
+
+
+
+/* Auto Report Page */ 
 .excel-table-container {
     display: flex;
     padding-left: var(--NavWidth);

@@ -17,7 +17,52 @@
 
     <div class="content">
         <h1>Welcome to MY SHIT</h1>
-        <p>{{current_time}}</p>
+        
+        <div id="MainPage_LocalTime">
+
+            <h3> Current Time</h3>
+            <p>{{current_time}}</p>
+        </div>
+
+        <div id="MainPage_GCS_Info_Display">
+                
+
+            <div id="Info_Display-Date">
+
+                <h3> Latest Date Stored In Road Assignment</h3>
+                {% if latest_date %}
+
+                {{latest_date}}
+            
+                {% endif %}
+            </div>
+            
+
+            
+
+        </div>
+       
+
+        <div id="MainPage_Upload_RD">
+
+            
+            <form action="/" method="POST" enctype="multipart/form-data">
+            
+                {%if Initial == 'Y'%}
+                {% endif %}
+                <a href="https://arizonastateu-my.sharepoint.com/:x:/r/personal/yzhan713_sundevils_asu_edu/_layouts/15/Doc.aspx?sourcedoc=%7B501BFCE3-28BF-48C2-9BE3-98E02F7835D1%7D&file=AZ%20Rd%20Assignment.xlsx&action=default&mobileredirect=true&DefaultItemOpen=1&ct=1705789834404&wdOrigin=OFFICECOM-HWA.MAIN.REC&cid=bb77f598-40e2-4ad1-a66e-750b69e98e1c&wdPreviousSessionSrc=HarmonyDesktop&wdPreviousSession=2d9660c3-59a7-4c9c-9ba8-0205f957a900" target="_blank">
+                    Click to Download RA Here</a>
+                <input type="file" name="file_roadAssignment_MAIN">Drop Local RA Here
+                <input type="submit" value="Upload Road Assignment >>>">
+                
+    
+                
+            </form>
+        </div>
+       
+        
+
+        
     </div>
 </body>
 

@@ -1,3 +1,6 @@
+'''Tutorial'''
+#https://realpython.com/python-web-applications/
+
 #The file the framework FLASK used to deliver Web App content
 from flask import Flask, request,render_template,send_file,send_from_directory, jsonify
 
@@ -17,11 +20,21 @@ import threading
 import time
 
 
+# '''
+# Use google cloud storage to approach "One Upload, Multiple Operations"
+
+# '''
+from google.cloud import storage
+from google.oauth2 import service_account
+
+
+
+
+
+
+
 
 #Version 01/24/2024
-
-#https://realpython.com/python-web-applications/
-
 
 #Create Flask instance "app"
 app = Flask(__name__)
@@ -29,6 +42,22 @@ app = Flask(__name__)
 #Create directory for downloadable files
 app.config['UPLOAD_FOLDER'] = 'tmp'
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
+
+
+'''Google Cloud Configure'''
+SERVICE_ACCOUNT_FILE = './GoogleCloudCredentialKeys.json'# The path to your service account key file
+BUCKET_NAME = "uniuni-host.appspot.com"
+
+# Load the credentials from the service account key file
+credentials = service_account.Credentials.from_service_account_file(
+    SERVICE_ACCOUNT_FILE
+)
+
+#print(vars(credentials)) #Make sure the credential get load 
+
+''''''
+
 
 celsius = "N/A"
 progress = 0
@@ -80,6 +109,10 @@ def Uniuni_Concat():
         return render_template('Uniuni-Concat.html', batchNum=batchNum, driverIDs=driverIDs, current_time = current_time)
 
     return render_template('Uniuni-Concat.html', current_time = current_time)
+
+
+
+
 
 # /////////////////////////////////Auto Daily Report/////////////////////////////////////////////////////
 
@@ -572,6 +605,49 @@ def writeIn():
     return 1
 
 
+'''
+Goolge Cloud Storage Functions
+'''
+
+def upload_file_to_gcs(file, bucket_name, blob_name):
+    """Uploads a file to Google Cloud Storage."""
+    storage_client = storage.Client(credentials=credentials)
+    bucket = storage_client.get_bucket(bucket_name)
+    blob = bucket.blob(blob_name)
+    blob.upload_from_string(file.read(), content_type=file.content_type)
+
+def download_blob(bucket_name, source_blob_name):
+    """Downloads a blob from the bucket."""
+    storage_client = storage.Client(credentials=credentials)
+    bucket = storage_client.bucket(bucket_name)
+    blob = bucket.blob(source_blob_name)
+
+    # Download the contents of the blob as a bytes object
+    contents = blob.download_as_bytes()
+
+    # Or, if you prefer, download to a file
+    # blob.download_to_filename(destination_file_name)
+
+    return contents
+
+def read_subsheet_name(blob_contents):
+    """Reads the name of the second subsheet from the Excel file contents."""
+    # Use BytesIO to handle the in-memory bytes object like a file
+    excel_file = io.BytesIO(blob_contents)
+
+    # Load the Excel file
+    workbook = openpyxl.load_workbook(excel_file, read_only=True)
+
+    # Get all sheet names
+    sheet_names = workbook.sheetnames
+
+    # Return the name of the second sheet
+    if len(sheet_names) >= 2:
+        return sheet_names[1]
+    else:
+        return "There are less than two sheets in the Excel file."
+
+
 #Download
 @app.route('/download/<filename>')
 def download_file(filename):
@@ -579,8 +655,12 @@ def download_file(filename):
     print(filename)
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename, as_attachment=True)
 
-@app.route('/')
+@app.route('/', methods=['GET','POST'])
 def index():
+
+    '''
+        Display CURRENT Time
+    '''
     # Define your local timezone
     local_timezone = pytz.timezone('America/Phoenix')  # e.g., 'America/New_York'
 
@@ -590,9 +670,49 @@ def index():
     # Convert UTC time to your local time
     local_time = utc_time.astimezone(local_timezone)
 
-    current_time = local_time.strftime("%Y-%m-%d, %H:%M:%S")
+    current_time = local_time.strftime("%m-%d-%Y, %H:%M:%S")
 
-    return render_template('index.html', current_time = current_time)
+
+
+    '''
+        Check Data Record
+        (The file stored in Google Cloud Storage)
+    '''
+    source_blob_name = "AZ Rd Assignment.xlsx"
+
+    #Download file from the google cloud storage as Byte file
+    f_byte = download_blob(BUCKET_NAME,source_blob_name) 
+
+    #Get the latest date recored in the sheet
+    latest_availiable_date = read_subsheet_name(f_byte)
+    
+
+
+    '''
+        One-Time Upload
+    '''
+
+    #Upload Road Assignment File
+
+    if 'file_roadAssignment_MAIN' not in request.files:
+        return render_template('index.html', current_time = current_time, latest_date = latest_availiable_date)
+    
+
+    file_roadAssignment = request.files['file_roadAssignment_MAIN']
+    # file_orderList = request.files['file_orderList']
+    
+
+    if file_roadAssignment.filename == '':
+        return 'No selected file'
+    
+    if file_roadAssignment: 
+
+        # Upload the file to Google Cloud Storage
+        upload_file_to_gcs(file_roadAssignment, BUCKET_NAME, file_roadAssignment.filename)
+
+        return render_template('index.html', current_time = current_time, latest_date = latest_availiable_date)
+    
+   
 
 
 if __name__ == "__main__":
